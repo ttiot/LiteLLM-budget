@@ -1,0 +1,23 @@
+{
+  "Budget information refreshed": "Budget information refreshed",
+  "$(sync) Refresh": "$(sync) Refresh",
+  "Update budget information": "Update budget information",
+  "$(gear) Settings": "$(gear) Settings",
+  "Open extension settings": "Open extension settings",
+  "$(graph) Details": "$(graph) Details",
+  "Spent: ${0}$ / Total budget: ${1}$": "Spent: ${0}$ / Total budget: ${1}$",
+  "Budget: ${0}$ / ${1}$": "Budget: ${0}$ / ${1}$",
+  "Budget Details": "Budget Details",
+  "Current spend:": "Current spend:",
+  "Total budget:": "Total budget:",
+  "Percentage used:": "Percentage used:",
+  "Click for more options": "Click for more options",
+  "Budget: Loading...": "Budget: Loading...",
+  "Enter your API token": "Enter your API token",
+  "Budget: Missing key": "Budget: Missing key",
+  "Please configure your API key in settings\nClick to open settings": "Please configure your API key in settings\nClick to open settings",
+  "Show budget menu": "Show budget menu",
+  "litellm.showBudgetMenu": "litellm.showBudgetMenu",
+  "Budget: Error": "Budget: Error",
+  "Unable to retrieve budget information\nClick to open settings": "Unable to retrieve budget information\nClick to open settings"
+}

@@ -1,0 +1,23 @@
+{
+  "Budget information refreshed": "Informations de budget actualisées",
+  "$(sync) Refresh": "$(sync) Actualiser",
+  "Update budget information": "Mettre à jour les informations de budget",
+  "$(gear) Settings": "$(gear) Paramètres",
+  "Open extension settings": "Ouvrir les paramètres de l'extension",
+  "$(graph) Details": "$(graph) Détails",
+  "Spent: ${0}$ / Total budget: ${1}$": "Dépensé: ${0}$ / Budget total: ${1}$",
+  "Budget: ${0}$ / ${1}$": "Budget: ${0}$ / ${1}$",
+  "Budget Details": "Détails du budget",
+  "Current spend:": "Dépenses actuelles",
+  "Total budget:": "Budget max:",
+  "Percentage used:": "Pourcentage utilisé:",
+  "Click for more options": "Cliquez pour plus d'options",
+  "Budget: Loading...": "Budget: Chargement...",
+  "Enter your API token": "Saisissez votre jeton API",
+  "Budget: Missing key": "Budget: Clé manquante",
+  "Please configure your API key in settings\nClick to open settings": "Veuillez configurer votre clé API dans les paramètres\nCliquez pour ouvrir les paramètres",
+  "Show budget menu": "Afficher le menu du budget",
+  "litellm.showBudgetMenu": "litellm.showBudgetMenu",
+  "Budget: Error": "Budget: Erreur",
+  "Unable to retrieve budget information\nClick to open settings": "Impossible de récupérer les informations de budget\nCliquez pour ouvrir les paramètres"
+}

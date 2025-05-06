@@ -2,66 +2,66 @@ import fetch from 'node-fetch';
 import * as vscode from 'vscode';
 
 export async function activate(context: vscode.ExtensionContext) {
-    // Commande pour ouvrir les paramètres de l'extension
+    // Command to open extension settings
     const openSettingsCommand = 'litellm.openSettings';
     context.subscriptions.push(vscode.commands.registerCommand(openSettingsCommand, () => {
         vscode.commands.executeCommand('workbench.action.openSettings', 'LiteLLM');
     }));
 
-    // Commande pour rafraîchir les informations de budget
+    // Command to refresh budget information
     const refreshBudgetCommand = 'litellm.refreshBudget';
     context.subscriptions.push(vscode.commands.registerCommand(refreshBudgetCommand, () => {
         updateStatusBar();
-        vscode.window.showInformationMessage('Informations de budget rafraîchies');
+        vscode.window.showInformationMessage(vscode.l10n.t('Budget information refreshed'));
     }));
 
-    // Commande pour afficher le menu contextuel du budget
+    // Command to display the budget context menu
     const showBudgetMenuCommand = 'litellm.showBudgetMenu';
     context.subscriptions.push(vscode.commands.registerCommand(showBudgetMenuCommand, async (spend: number, maxBudget: number) => {
-        // Créer un QuickPick pour afficher un menu léger avec des options
+        // Create a QuickPick to display a lightweight menu with options
         const items: vscode.QuickPickItem[] = [
             {
-                label: "$(sync) Rafraîchir",
-                description: "Mettre à jour les informations de budget"
+                label: vscode.l10n.t("$(sync) Refresh"),
+                description: vscode.l10n.t("Update budget information")
             },
             {
-                label: "$(gear) Paramètres",
-                description: "Ouvrir les paramètres de l'extension"
+                label: vscode.l10n.t("$(gear) Settings"),
+                description: vscode.l10n.t("Open extension settings")
             },
             {
-                label: "$(graph) Détails",
-                description: `Dépense: ${spend}$ / Budget total: ${maxBudget}$`
+                label: vscode.l10n.t("$(graph) Details"),
+                description: vscode.l10n.t("Spent: ${0}$ / Total budget: ${1}$",spend, maxBudget)
             }
         ];
 
         const selectedItem = await vscode.window.showQuickPick(items, {
-            placeHolder: `Budget: ${spend}$ / ${maxBudget}$`,
-            title: "Détails du budget"
+            placeHolder: vscode.l10n.t("Budget: ${0}$ / ${1}$", spend, maxBudget),
+            title: vscode.l10n.t("Budget Details")
         });
 
         if (selectedItem) {
-            if (selectedItem.label.includes("Rafraîchir")) {
+            if (selectedItem.label.includes("Refresh")) {
                 vscode.commands.executeCommand('litellm.refreshBudget');
-            } else if (selectedItem.label.includes("Paramètres")) {
+            } else if (selectedItem.label.includes("Settings")) {
                 vscode.commands.executeCommand('litellm.openSettings');
             }
         }
     }));
 
-    // Création d'un élément dans la barre d'état
+    // Creating a status bar item
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.text = "Budget: Loading...";
+    statusBarItem.text = vscode.l10n.t("Budget: Loading...");
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
 
-	// Fonction pour récupérer les paramètres utilisateur
+	// Function to retrieve user settings
 	const getConfigValues = async () => {
 	    const config = vscode.workspace.getConfiguration('LiteLLM');
 		const secrets: vscode.SecretStorage = context.secrets;
 
         let apiKey = await secrets.get("apiKey");
         if (!apiKey) {
-            apiKey = await vscode.window.showInputBox({ title: 'Enter your API token', password: true });
+            apiKey = await vscode.window.showInputBox({ title: vscode.l10n.t('Enter your API token'), password: true });
             if (apiKey !== undefined) {
                 await secrets.store('apiKey',apiKey);
             }
@@ -71,13 +71,13 @@ export async function activate(context: vscode.ExtensionContext) {
         return { apiKey, refreshInterval, apiUrl };
     };
 
-    // Fonction pour actualiser la barre d'état
+    // Function to update the status bar
     const updateStatusBar = async () => {
-        const { apiKey, apiUrl } = await getConfigValues(); // Récupérer la clé API et l'URL
+        const { apiKey, apiUrl } = await getConfigValues(); // Retrieve API key and URL
 
         if (!apiKey ) {
-            statusBarItem.text = "Budget: Clé manquante";
-            statusBarItem.tooltip = "Veuillez configurer votre clé API dans les paramètres\nCliquez pour ouvrir les paramètres";
+            statusBarItem.text = vscode.l10n.t("Budget: Missing key");
+            statusBarItem.tooltip = vscode.l10n.t("Please configure your API key in settings\nClick to open settings");
             statusBarItem.command = 'litellm.openSettings';
             return;
         }
@@ -98,57 +98,57 @@ export async function activate(context: vscode.ExtensionContext) {
             const spend = data.info.spend ?? 0;
             const max_budget = data.info.max_budget ?? 0;
 
-            // Arrondir le `spend` au dixième
+            // Round the `spend` to the nearest hundredth
             const spendRounded = Math.round(spend * 100) / 100;
 
-            // Mettre à jour le texte de la barre d'état
+            // Update the status bar text
             statusBarItem.text = `💸 ${spendRounded}/${max_budget}$`;
             
-            // Ajouter une infobulle riche qui s'affiche au survol
-            statusBarItem.tooltip = new vscode.MarkdownString(`
-## Détails du budget
-- **Dépense actuelle:** ${spendRounded}$
-- **Budget total:** ${max_budget}$
-- **Pourcentage utilisé:** ${max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0}%
-
-*Cliquez pour plus d'options*
-            `);
+            // Add a rich tooltip that appears on hover
+            let percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
+            statusBarItem.tooltip = new vscode.MarkdownString(
+                `## ${vscode.l10n.t("Budget Details")}\n` +
+                `- **${vscode.l10n.t("Current spend:")}** ${spendRounded}$\n` +
+                `- **${vscode.l10n.t("Total budget:")}** ${max_budget}$\n` +
+                `- **${vscode.l10n.t("Percentage used:")}** ${percent_used}%\n\n` +
+                `*${vscode.l10n.t("Click for more options")}*`
+            );
             statusBarItem.tooltip.isTrusted = true;
             
-            // Associer la commande pour afficher le menu contextuel
+            // Associate the command to display the context menu
             statusBarItem.command = {
-                title: 'Afficher le menu du budget',
-                command: 'litellm.showBudgetMenu',
+                title: vscode.l10n.t('Show budget menu'),
+                command: vscode.l10n.t('litellm.showBudgetMenu'),
                 arguments: [spendRounded, max_budget]
             };
         } catch (error) {
-            statusBarItem.text = "Budget: Erreur";
-            statusBarItem.tooltip = "Impossible de récupérer les informations de budget\nCliquez pour ouvrir les paramètres";
+            statusBarItem.text = vscode.l10n.t("Budget: Error");
+            statusBarItem.tooltip = vscode.l10n.t("Unable to retrieve budget information\nClick to open settings");
             statusBarItem.command = 'litellm.openSettings';
         }
     };
 
-    // Récupérer l'intervalle de rafraîchissement initial (en secondes)
+    // Get the initial refresh interval (in seconds)
     const { refreshInterval } = await getConfigValues();
     let interval = setInterval(updateStatusBar, refreshInterval * 1000);
 
-    // Actualiser immédiatement lors de l'activation
+    // Refresh immediately upon activation
     updateStatusBar();
 
-    // Écouter les changements de configuration
+    // Listen for configuration changes
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async e => {
         if (e.affectsConfiguration('LiteLLM')) {
-            // Mettre à jour l'intervalle si la configuration change
+            // Update the interval if the configuration changes
             const { refreshInterval: newInterval } = await getConfigValues();
             clearInterval(interval);
             interval = setInterval(updateStatusBar, newInterval * 1000);
             
-            // Rafraîchir immédiatement avec les nouveaux paramètres
+            // Refresh immediately with the new settings
             updateStatusBar();
         }
     }));
 
-    // Nettoyer les ressources lorsque l'extension est désactivée
+    // Clean up resources when the extension is deactivated
     context.subscriptions.push({
         dispose: () => clearInterval(interval),
     });

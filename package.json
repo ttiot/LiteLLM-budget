@@ -13,6 +13,7 @@
   ],
   "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
+  "l10n": "./l10n",
   "contributes": {
     "configuration": {
       "title": "LiteLLM",
