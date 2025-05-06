@@ -1,35 +1,37 @@
-# LiteLLM Budget - Extension VSCode
+# LiteLLM Budget - VSCode Extension
 
 ## Description
 
-**LiteLLM Budget** est une extension pour Visual Studio Code qui vous permet de suivre en temps réel le budget consommé et le budget maximum associé à votre clé API LiteLLM. Cette extension est particulièrement utile pour les développeurs utilisant des services d'IA nécessitant une API payante, afin de gérer efficacement leurs dépenses.
+**LiteLLM Budget** is a Visual Studio Code extension that allows you to track in real-time the consumed budget and maximum budget associated with your LiteLLM API key. This extension is particularly useful for developers using AI services that require a paid API, to efficiently manage their expenses.
 
-## Fonctionnalités
+## Features
 
-- Affiche **le budget consommé** et **le budget maximum** de votre clé API dans la barre d'état de VSCode avec le format `💸 [dépense]/[budget max]$`.
-- Rafraîchissement automatique des données à intervalle régulier (configurable).
-- Configuration simple via les paramètres de VSCode.
+- Displays **the consumed budget** and **the maximum budget** of your API key in the VSCode status bar with the format `💸 [expense]/[max budget]$`.
+- Automatic data refresh at regular intervals (configurable).
+- Simple configuration via VSCode settings.
 
 ## Installation
 
-Pour installer l'extension :
+To install the extension:
 
-1. Interface VSCode : Extensions → ⋯ (Plus d'actions) → "Installer à partir d'un VSIX..." / Ligne de commande : code --install-extension LiteLLM-budget-1.0.0.vsix
+1. VSCode Interface: Extensions → ⋯ (More actions) → "Install from VSIX..." / Command line: code --install-extension LiteLLM-budget-1.0.0.vsix
 
 ## Configuration
 
-Pour que l'extension fonctionne correctement, vous devez configurer les paramètres suivants dans votre fichier de configuration VSCode (settings.json) :
+For the extension to work properly, you need to configure the following settings in your VSCode configuration file (settings.json):
 
 ```json
 {
   "LiteLLM.refreshInterval": 60,
-  "LiteLLM.apiUrl": "https://votre-url-api"
+  "LiteLLM.apiUrl": "https://your-api-url"
 }
 ```
 
-### Paramètres disponibles
+Or open the extension settings directly.
 
-| Paramètre | Type | Par défaut | Description |
-|-----------|------|------------|-------------|
-| `LiteLLM.refreshInterval` | number | 60 | Intervalle de rafraîchissement en secondes |
-| `LiteLLM.apiUrl` | string | "https://" | URL de base de l'API LiteLLM |
+### Available Settings
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `LiteLLM.refreshInterval` | number | 60 | Refresh interval in seconds |
+| `LiteLLM.apiUrl` | string | "https://" | LiteLLM API base URL |
