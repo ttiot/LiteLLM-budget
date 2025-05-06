@@ -71,9 +71,72 @@ export async function activate(context: vscode.ExtensionContext) {
         return { apiKey, refreshInterval, apiUrl };
     };
 
+    // Function to generate a progress bar with Unicode characters
+    const generateProgressBar = (percentage: number, length: number = 10): string => {
+        const filledLength = Math.round(percentage * length / 100);
+        const emptyLength = length - filledLength;
+        
+        // Unicode characters for the progress bar
+        const filled = '█';
+        const empty = '░';
+        
+        return filled.repeat(filledLength) + empty.repeat(emptyLength);
+    };
+
+    // Function to get color based on percentage
+    const getColorForPercentage = (percentage: number, theme: string): string => {
+        if (theme === 'traffic') {
+            if (percentage < 50) return 'green';
+            if (percentage < 75) return 'yellow';
+            return 'red';
+        } else if (theme === 'gradient') {
+            if (percentage < 33) return 'green';
+            if (percentage < 66) return 'blue';
+            if (percentage < 90) return 'yellow';
+            return 'red';
+        } else {
+            // Default theme
+            if (percentage < 50) return '';
+            if (percentage < 75) return 'yellow';
+            return 'red';
+        }
+    };
+
+    // Function to check if a threshold has been crossed
+    const checkThresholds = (percentage: number, thresholds: any, lastNotifiedThreshold: number): number => {
+        let notifiedThreshold = lastNotifiedThreshold;
+        const config = vscode.workspace.getConfiguration('LiteLLM');
+        const enableNotifications = config.get<boolean>('enableNotifications') ?? true;
+        
+        if (!enableNotifications) {
+            return notifiedThreshold;
+        }
+        
+        if (percentage >= thresholds.danger && lastNotifiedThreshold < thresholds.danger) {
+            vscode.window.showWarningMessage(vscode.l10n.t('Budget alert: {0}% of your budget has been used!', percentage));
+            notifiedThreshold = thresholds.danger;
+        } else if (percentage >= thresholds.critical && lastNotifiedThreshold < thresholds.critical) {
+            vscode.window.showWarningMessage(vscode.l10n.t('Budget warning: {0}% of your budget has been used!', percentage));
+            notifiedThreshold = thresholds.critical;
+        } else if (percentage >= thresholds.warning && lastNotifiedThreshold < thresholds.warning) {
+            vscode.window.showInformationMessage(vscode.l10n.t('Budget notice: {0}% of your budget has been used.', percentage));
+            notifiedThreshold = thresholds.warning;
+        }
+        
+        return notifiedThreshold;
+    };
+
+    // Store the last notified threshold to avoid repeated notifications
+    let lastNotifiedThreshold = 0;
+
     // Function to update the status bar
     const updateStatusBar = async () => {
         const { apiKey, apiUrl } = await getConfigValues(); // Retrieve API key and URL
+        const config = vscode.workspace.getConfiguration('LiteLLM');
+        const displayFormat = config.get<string>('displayFormat') ?? 'progressBar';
+        const colorTheme = config.get<string>('colorTheme') ?? 'gradient';
+        const showIcon = config.get<boolean>('showIcon') ?? true;
+        const thresholds = config.get<any>('thresholds') ?? { warning: 50, critical: 75, danger: 90 };
 
         if (!apiKey ) {
             statusBarItem.text = vscode.l10n.t("Budget: Missing key");
@@ -100,17 +163,43 @@ export async function activate(context: vscode.ExtensionContext) {
 
             // Round the `spend` to the nearest hundredth
             const spendRounded = Math.round(spend * 100) / 100;
-
-            // Update the status bar text
-            statusBarItem.text = `💸 ${spendRounded}/${max_budget}$`;
+            
+            // Calculate percentage used
+            let percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
+            
+            // Check if any threshold has been crossed
+            lastNotifiedThreshold = checkThresholds(percent_used, thresholds, lastNotifiedThreshold);
+            
+            // Get color based on percentage
+            const color = getColorForPercentage(percent_used, colorTheme);
+            
+            // Update the status bar text based on display format
+            const icon = showIcon ? '💸 ' : '';
+            
+            if (displayFormat === 'progressBar') {
+                const progressBar = generateProgressBar(percent_used);
+                statusBarItem.text = `${icon}${progressBar} ${spendRounded}/${max_budget}$`;
+            } else if (displayFormat === 'percentage') {
+                statusBarItem.text = `${icon}${percent_used}% (${spendRounded}/${max_budget}$)`;
+            } else {
+                // Simple format
+                statusBarItem.text = `${icon}${spendRounded}/${max_budget}$`;
+            }
+            
+            // Set color based on percentage
+            if (color) {
+                statusBarItem.color = new vscode.ThemeColor(`statusBarItem.${color}Foreground`);
+            } else {
+                statusBarItem.color = undefined;
+            }
             
             // Add a rich tooltip that appears on hover
-            let percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
             statusBarItem.tooltip = new vscode.MarkdownString(
                 `## ${vscode.l10n.t("Budget Details")}\n` +
                 `- **${vscode.l10n.t("Current spend:")}** ${spendRounded}$\n` +
                 `- **${vscode.l10n.t("Total budget:")}** ${max_budget}$\n` +
-                `- **${vscode.l10n.t("Percentage used:")}** ${percent_used}%\n\n` +
+                `- **${vscode.l10n.t("Percentage used:")}** ${percent_used}%\n` +
+                `- **${vscode.l10n.t("Progress:")}** ${generateProgressBar(percent_used, 20)}\n\n` +
                 `*${vscode.l10n.t("Click for more options")}*`
             );
             statusBarItem.tooltip.isTrusted = true;

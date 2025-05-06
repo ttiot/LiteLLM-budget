@@ -27,6 +27,37 @@
           "type": "string",
           "default": "https://",
           "description": "URL de base de l'API LiteLLM"
+        },
+        "LiteLLM.displayFormat": {
+          "type": "string",
+          "enum": ["simple", "percentage", "progressBar"],
+          "default": "progressBar",
+          "description": "Format d'affichage de la barre d'état"
+        },
+        "LiteLLM.colorTheme": {
+          "type": "string",
+          "enum": ["default", "traffic", "gradient"],
+          "default": "gradient",
+          "description": "Thème de couleur pour la barre de progression"
+        },
+        "LiteLLM.showIcon": {
+          "type": "boolean",
+          "default": true,
+          "description": "Afficher l'icône dans la barre d'état"
+        },
+        "LiteLLM.thresholds": {
+          "type": "object",
+          "default": {
+            "warning": 50,
+            "critical": 75,
+            "danger": 90
+          },
+          "description": "Seuils de notification en pourcentage"
+        },
+        "LiteLLM.enableNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Activer les notifications pour les seuils importants"
         }
       }
     }
