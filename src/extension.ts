@@ -24,6 +24,45 @@ export async function activate(context: vscode.ExtensionContext) {
         updateStatusBar();
         vscode.window.showInformationMessage(vscode.l10n.t('Budget information refreshed'));
     }));
+    
+    // Command to force dashboard update
+    const updateDashboardCommand = 'litellm.updateDashboard';
+    context.subscriptions.push(vscode.commands.registerCommand(updateDashboardCommand, async () => {
+        const { apiKey, apiUrl } = await getConfigValues();
+        if (!apiKey) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${apiUrl}/key/info`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const spend = data.info.spend ?? 0;
+            const max_budget = data.info.max_budget ?? 0;
+            const spendRounded = Math.round(spend * 100) / 100;
+            const percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
+            
+            // Mettre à jour le tableau de bord
+            DashboardView.updateDashboard({
+                spend: spendRounded,
+                maxBudget: max_budget,
+                percentUsed: percent_used
+            });
+            
+            vscode.window.showInformationMessage(vscode.l10n.t('Dashboard updated'));
+        } catch (error) {
+            vscode.window.showErrorMessage(vscode.l10n.t('Failed to update dashboard'));
+        }
+    }));
 
     // Command to display the budget context menu
     const showBudgetMenuCommand = 'litellm.showBudgetMenu';

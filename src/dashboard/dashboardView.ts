@@ -4,11 +4,47 @@ export class DashboardView {
     private static instance: DashboardView | undefined;
     private readonly _view: vscode.WebviewView | undefined;
     private readonly _extensionUri: vscode.Uri;
+    private static pendingData: any = null;
+    private static isReady: boolean = false;
 
     private constructor(view: vscode.WebviewView, extensionUri: vscode.Uri) {
         this._view = view;
         this._extensionUri = extensionUri;
         this._initializeView();
+        
+        // Configurer l'écouteur de messages
+        if (this._view) {
+            // Écouter les messages du webview
+            this._view.webview.onDidReceiveMessage(message => {
+                if (message.type === 'ready') {
+                    DashboardView.isReady = true;
+                    
+                    // Envoyer les données en attente si elles existent
+                    if (DashboardView.pendingData && this._view) {
+                        this._view.webview.postMessage({
+                            type: 'update',
+                            data: DashboardView.pendingData
+                        });
+                        DashboardView.pendingData = null;
+                    }
+                } else if (message.type === 'refresh') {
+                    // Exécuter la commande de mise à jour du tableau de bord
+                    vscode.commands.executeCommand('litellm.updateDashboard');
+                }
+            });
+            
+            // Écouter les changements de visibilité
+            this._view.onDidChangeVisibility(() => {
+                // Vérifier que this._view n'est pas undefined
+                if (this._view && this._view.visible && DashboardView.pendingData) {
+                    // Forcer une mise à jour lorsque la vue devient visible
+                    this._view.webview.postMessage({
+                        type: 'update',
+                        data: DashboardView.pendingData
+                    });
+                }
+            });
+        }
     }
 
     public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -56,6 +92,26 @@ export class DashboardView {
                     border-radius: 5px;
                     padding: 15px;
                 }
+                .budget-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                .header-title {
+                    font-weight: bold;
+                }
+                .refresh-button {
+                    background-color: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    border: none;
+                    padding: 4px 8px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                }
+                .refresh-button:hover {
+                    background-color: var(--vscode-button-hoverBackground);
+                }
                 .budget-info {
                     display: flex;
                     justify-content: space-between;
@@ -80,6 +136,10 @@ export class DashboardView {
             <div class="dashboard-container">
                 <div class="dashboard-header">LiteLLM Budget Dashboard</div>
                 <div class="budget-summary">
+                    <div class="budget-header">
+                        <span class="header-title">Résumé du budget</span>
+                        <button class="refresh-button" id="refresh-button">Rafraîchir</button>
+                    </div>
                     <div class="budget-info">
                         <span>Dépenses actuelles:</span>
                         <span id="current-spend">Chargement...</span>
@@ -102,8 +162,6 @@ export class DashboardView {
             </div>
             <script>
                 (function() {
-                    // Placeholder for future JavaScript functionality
-                    // Will be implemented in future phases
                     const vscode = acquireVsCodeApi();
                     
                     // Listen for messages from the extension
@@ -133,6 +191,24 @@ export class DashboardView {
                         }
                     }
                     
+                    // Ajouter un gestionnaire d'événements pour le bouton de rafraîchissement
+                    document.getElementById('refresh-button').addEventListener('click', () => {
+                        // Mettre à jour le texte du bouton pour indiquer le chargement
+                        const refreshButton = document.getElementById('refresh-button');
+                        const originalText = refreshButton.textContent;
+                        refreshButton.textContent = 'Chargement...';
+                        refreshButton.disabled = true;
+                        
+                        // Demander une mise à jour au backend
+                        vscode.postMessage({ type: 'refresh' });
+                        
+                        // Rétablir le texte du bouton après un court délai
+                        setTimeout(() => {
+                            refreshButton.textContent = originalText;
+                            refreshButton.disabled = false;
+                        }, 2000);
+                    });
+                    
                     // Signal that the webview is ready
                     vscode.postMessage({ type: 'ready' });
                 })();
@@ -142,12 +218,17 @@ export class DashboardView {
     }
 
     public static updateDashboard(data: any): void {
-        if (DashboardView.instance && DashboardView.instance._view) {
-            DashboardView.instance._view.webview.postMessage({
-                type: 'update',
-                data
-            });
+        // Stocker les données pour une utilisation ultérieure si le webview n'est pas prêt
+        if (!DashboardView.isReady || !DashboardView.instance || !DashboardView.instance._view) {
+            DashboardView.pendingData = data;
+            return;
         }
+        
+        // Envoyer les données au webview
+        DashboardView.instance._view.webview.postMessage({
+            type: 'update',
+            data
+        });
     }
 }
 
