@@ -1,11 +1,21 @@
 import fetch from 'node-fetch';
 import * as vscode from 'vscode';
+import { DashboardView, DashboardViewProvider } from './dashboard/dashboardView';
 
 export async function activate(context: vscode.ExtensionContext) {
+    // Enregistrer la vue du tableau de bord
+    context.subscriptions.push(DashboardView.register(context));
+
     // Command to open extension settings
     const openSettingsCommand = 'litellm.openSettings';
     context.subscriptions.push(vscode.commands.registerCommand(openSettingsCommand, () => {
         vscode.commands.executeCommand('workbench.action.openSettings', 'LiteLLM');
+    }));
+
+    // Command to open dashboard
+    const openDashboardCommand = 'litellm.openDashboard';
+    context.subscriptions.push(vscode.commands.registerCommand(openDashboardCommand, () => {
+        vscode.commands.executeCommand('workbench.view.extension.litellm-budget');
     }));
 
     // Command to refresh budget information
@@ -31,6 +41,10 @@ export async function activate(context: vscode.ExtensionContext) {
             {
                 label: vscode.l10n.t("$(graph) Details"),
                 description: vscode.l10n.t("Spent: ${0}$ / Total budget: ${1}$",spend, maxBudget)
+            },
+            {
+                label: vscode.l10n.t("$(dashboard) Dashboard"),
+                description: vscode.l10n.t("Open budget dashboard")
             }
         ];
 
@@ -44,6 +58,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 vscode.commands.executeCommand('litellm.refreshBudget');
             } else if (selectedItem.label.includes("Settings")) {
                 vscode.commands.executeCommand('litellm.openSettings');
+            } else if (selectedItem.label.includes("Dashboard")) {
+                vscode.commands.executeCommand('litellm.openDashboard');
             }
         }
     }));
@@ -185,6 +201,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 // Simple format
                 statusBarItem.text = `${icon}${spendRounded}/${max_budget}$`;
             }
+            
+            // Mettre à jour le tableau de bord
+            DashboardView.updateDashboard({
+                spend: spendRounded,
+                maxBudget: max_budget,
+                percentUsed: percent_used
+            });
             
             // Set color based on percentage
             if (color) {

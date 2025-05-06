@@ -15,6 +15,24 @@
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "litellm-budget",
+          "title": "LiteLLM Budget",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "litellm-budget": [
+        {
+          "id": "litellm.budgetDashboard",
+          "name": "Tableau de bord",
+          "type": "webview"
+        }
+      ]
+    },
     "configuration": {
       "title": "LiteLLM",
       "properties": {
