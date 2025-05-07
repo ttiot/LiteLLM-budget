@@ -52,7 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
             const percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
             
             // Mettre à jour le tableau de bord
-            DashboardView.updateDashboard({
+            await DashboardView.updateDashboard({
                 spend: spendRounded,
                 maxBudget: max_budget,
                 percentUsed: percent_used
@@ -242,7 +242,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             
             // Mettre à jour le tableau de bord
-            DashboardView.updateDashboard({
+            await DashboardView.updateDashboard({
                 spend: spendRounded,
                 maxBudget: max_budget,
                 percentUsed: percent_used

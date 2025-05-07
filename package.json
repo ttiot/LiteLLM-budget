@@ -89,7 +89,8 @@
     "test": "vscode-test"
   },
   "dependencies": {
-    "node-fetch": "^2.6.12"
+    "node-fetch": "^2.6.12",
+    "chart.js": "^4.4.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.99.0",
