@@ -2,7 +2,7 @@
   "name": "LiteLLM-budget",
   "displayName": "LiteLLM Budget",
   "description": "Display the spend and max budget from LiteLLM",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "jmichaux",
   "repository": "https://github.com/ttiot/LiteLLM-budget",
   "engines": {

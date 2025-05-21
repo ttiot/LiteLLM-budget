@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import * as vscode from 'vscode';
-import { DashboardView, DashboardViewProvider } from './dashboard/dashboardView';
+import { DashboardView } from './dashboard/dashboardView';
 
 export async function activate(context: vscode.ExtensionContext) {
     // Enregistrer la vue du tableau de bord
@@ -93,11 +93,11 @@ export async function activate(context: vscode.ExtensionContext) {
         });
 
         if (selectedItem) {
-            if (selectedItem.label.includes("Refresh")) {
+            if (selectedItem.label.includes("$(sync)")) {
                 vscode.commands.executeCommand('litellm.refreshBudget');
-            } else if (selectedItem.label.includes("Settings")) {
+            } else if (selectedItem.label.includes("$(gear)")) {
                 vscode.commands.executeCommand('litellm.openSettings');
-            } else if (selectedItem.label.includes("Dashboard")) {
+            } else if (selectedItem.label.includes("$(dashboard)")) {
                 vscode.commands.executeCommand('litellm.openDashboard');
             }
         }
@@ -141,18 +141,18 @@ export async function activate(context: vscode.ExtensionContext) {
     // Function to get color based on percentage
     const getColorForPercentage = (percentage: number, theme: string): string => {
         if (theme === 'traffic') {
-            if (percentage < 50) return 'green';
-            if (percentage < 75) return 'yellow';
+            if (percentage < 50) {return 'green';}
+            if (percentage < 75) {return 'yellow';}
             return 'red';
         } else if (theme === 'gradient') {
-            if (percentage < 33) return 'green';
-            if (percentage < 66) return 'blue';
-            if (percentage < 90) return 'yellow';
+            if (percentage < 33) {return 'green';}
+            if (percentage < 66) {return 'blue';}
+            if (percentage < 90) {return 'yellow';}
             return 'red';
         } else {
             // Default theme
-            if (percentage < 50) return '';
-            if (percentage < 75) return 'yellow';
+            if (percentage < 50) {return '';}
+            if (percentage < 75) {return 'yellow';}
             return 'red';
         }
     };
