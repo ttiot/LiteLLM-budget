@@ -46,6 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             
             const data = await response.json();
+            const reset_at = data.info.budget_reset_at ?? 0;
             const spend = data.info.spend ?? 0;
             const max_budget = data.info.max_budget ?? 0;
             const spendRounded = Math.round(spend * 100) / 100;
@@ -213,8 +214,20 @@ export async function activate(context: vscode.ExtensionContext) {
             }
 
             const data = await response.json();
+            const reset_at = data.info.budget_reset_at ?? 0;
             const spend = data.info.spend ?? 0;
             const max_budget = data.info.max_budget ?? 0;
+
+            // Nouvelle variable pour formater la date selon la locale en cours
+            const reset_at_formatted = reset_at !== 0 
+            ? new Intl.DateTimeFormat(vscode.env.language, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(new Date(reset_at))
+            : vscode.l10n.t("Non défini");
 
             // Round the `spend` to the nearest hundredth
             const spendRounded = Math.round(spend * 100) / 100;
@@ -261,6 +274,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 `- **${vscode.l10n.t("Current spend:")}** ${spendRounded}$\n` +
                 `- **${vscode.l10n.t("Total budget:")}** ${max_budget}$\n` +
                 `- **${vscode.l10n.t("Percentage used:")}** ${percent_used}%\n` +
+                `- **${vscode.l10n.t("Reset at:")}** ${reset_at_formatted}\n` +
                 `- **${vscode.l10n.t("Progress:")}** ${generateProgressBar(percent_used, 20)}\n\n` +
                 `*${vscode.l10n.t("Click for more options")}*`
             );
