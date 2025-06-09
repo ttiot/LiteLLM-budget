@@ -20,5 +20,11 @@
   "Show budget menu": "Show budget menu",
   "litellm.showBudgetMenu": "litellm.showBudgetMenu",
   "Budget: Error": "Budget: Error",
-  "Unable to retrieve budget information\nClick to open settings": "Unable to retrieve budget information\nClick to open settings"
+  "Unable to retrieve budget information\nClick to open settings": "Unable to retrieve budget information\nClick to open settings",
+  "$(key) Change API Token": "$(key) Change API Token",
+  "Update your API token": "Update your API token",
+  "Enter your new API token": "Enter your new API token",
+  "This will replace your current API token": "This will replace your current API token",
+  "API token updated successfully": "API token updated successfully",
+  "API token cannot be empty": "API token cannot be empty"
 }

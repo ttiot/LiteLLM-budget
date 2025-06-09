@@ -193,6 +193,10 @@ export class DashboardView {
                         <span>Pourcentage utilisé:</span>
                         <span id="percentage-used">Chargement...</span>
                     </div>
+                    <div class="budget-info">
+                        <span>Réinitialisation:</span>
+                        <span id="reset-at">Chargement...</span>
+                    </div>
                     <div class="progress-container">
                         <div class="progress-bar" id="budget-progress"></div>
                     </div>
@@ -221,6 +225,7 @@ export class DashboardView {
                             document.getElementById('current-spend').textContent = data.spend + '$';
                             document.getElementById('total-budget').textContent = data.maxBudget + '$';
                             document.getElementById('percentage-used').textContent = data.percentUsed + '%';
+                            document.getElementById('reset-at').textContent = data.resetAt || 'Non défini';
                             document.getElementById('budget-progress').style.width = data.percentUsed + '%';
                             
                             // Change color based on percentage

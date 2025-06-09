@@ -52,16 +52,52 @@ export async function activate(context: vscode.ExtensionContext) {
             const spendRounded = Math.round(spend * 100) / 100;
             const percent_used = max_budget > 0 ? Math.round((spendRounded / max_budget) * 100) : 0;
             
+            // Formater la date de réinitialisation
+            const reset_at_formatted = reset_at !== 0
+            ? new Intl.DateTimeFormat(vscode.env.language, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(new Date(reset_at))
+            : vscode.l10n.t("Non défini");
+            
             // Mettre à jour le tableau de bord
             await DashboardView.updateDashboard({
                 spend: spendRounded,
                 maxBudget: max_budget,
-                percentUsed: percent_used
+                percentUsed: percent_used,
+                resetAt: reset_at_formatted
             });
             
             vscode.window.showInformationMessage(vscode.l10n.t('Dashboard updated'));
         } catch (error) {
             vscode.window.showErrorMessage(vscode.l10n.t('Failed to update dashboard'));
+        }
+    }));
+
+    // Command to change API token
+    const changeApiTokenCommand = 'litellm.changeApiToken';
+    context.subscriptions.push(vscode.commands.registerCommand(changeApiTokenCommand, async () => {
+        const secrets: vscode.SecretStorage = context.secrets;
+        
+        // Demander le nouveau token à l'utilisateur
+        const newApiKey = await vscode.window.showInputBox({
+            title: vscode.l10n.t('Enter your new API token'),
+            password: true,
+            prompt: vscode.l10n.t('This will replace your current API token')
+        });
+        
+        if (newApiKey !== undefined && newApiKey.trim() !== '') {
+            // Sauvegarder le nouveau token
+            await secrets.store('apiKey', newApiKey.trim());
+            vscode.window.showInformationMessage(vscode.l10n.t('API token updated successfully'));
+            
+            // Actualiser immédiatement les informations de budget
+            updateStatusBar();
+        } else if (newApiKey !== undefined) {
+            vscode.window.showWarningMessage(vscode.l10n.t('API token cannot be empty'));
         }
     }));
 
@@ -73,6 +109,10 @@ export async function activate(context: vscode.ExtensionContext) {
             {
                 label: vscode.l10n.t("$(sync) Refresh"),
                 description: vscode.l10n.t("Update budget information")
+            },
+            {
+                label: vscode.l10n.t("$(key) Change API Token"),
+                description: vscode.l10n.t("Update your API token")
             },
             {
                 label: vscode.l10n.t("$(gear) Settings"),
@@ -96,6 +136,8 @@ export async function activate(context: vscode.ExtensionContext) {
         if (selectedItem) {
             if (selectedItem.label.includes("$(sync)")) {
                 vscode.commands.executeCommand('litellm.refreshBudget');
+            } else if (selectedItem.label.includes("$(key)")) {
+                vscode.commands.executeCommand('litellm.changeApiToken');
             } else if (selectedItem.label.includes("$(gear)")) {
                 vscode.commands.executeCommand('litellm.openSettings');
             } else if (selectedItem.label.includes("$(dashboard)")) {
@@ -258,7 +300,8 @@ export async function activate(context: vscode.ExtensionContext) {
             await DashboardView.updateDashboard({
                 spend: spendRounded,
                 maxBudget: max_budget,
-                percentUsed: percent_used
+                percentUsed: percent_used,
+                resetAt: reset_at_formatted
             });
             
             // Set color based on percentage

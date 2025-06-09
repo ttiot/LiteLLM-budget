@@ -2,7 +2,7 @@
   "name": "LiteLLM-budget",
   "displayName": "LiteLLM Budget",
   "description": "Display the spend and max budget from LiteLLM",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "publisher": "jmichaux",
   "repository": "https://github.com/ttiot/LiteLLM-budget",
   "engines": {
@@ -78,7 +78,14 @@
           "description": "Activer les notifications pour les seuils importants"
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "litellm.changeApiToken",
+        "title": "Change API Token",
+        "category": "LiteLLM"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
